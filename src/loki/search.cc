@@ -24,7 +24,15 @@ template <typename T> inline T square(T v) {
 }
 
 bool is_search_filter_triggered(const DirectedEdge* edge,
+                                const DynamicCost& costing,
+                                const GraphTile* tile,
                                 const Location::SearchFilter& search_filter) {
+#if 0
+  std::cout << "in is_search_filter_triggered exclude_closures_ is "
+            << search_filter.exclude_closures_ << "\n";
+  std::cout << "(costing.flow_mask() & kCurrentFlowMask) = " << (costing.flow_mask() & kCurrentFlowMask) << "\n";
+  std::cout << "tile->IsClosed(edge) = " << tile->IsClosed(edge) << "\n\n";
+#endif
   // check if this edge matches any of the exclusion filters
   uint32_t road_class = static_cast<uint32_t>(edge->classification());
   uint32_t min_road_class = static_cast<uint32_t>(search_filter.min_road_class_);
@@ -36,7 +44,9 @@ bool is_search_filter_triggered(const DirectedEdge* edge,
   if ((road_class > min_road_class || road_class < max_road_class) ||
       (search_filter.exclude_tunnel_ && edge->tunnel()) ||
       (search_filter.exclude_bridge_ && edge->bridge()) ||
-      (search_filter.exclude_ramp_ && (edge->use() == Use::kRamp))) {
+      (search_filter.exclude_ramp_ && (edge->use() == Use::kRamp)) ||
+      ((costing.flow_mask() & kCurrentFlowMask) && search_filter.exclude_closures_ &&
+       tile->IsClosed(edge))) {
     return true;
   }
 
@@ -511,7 +521,13 @@ struct bin_handler_t {
       bool all_prefiltered = true;
       for (p_itr = begin; p_itr != end; ++p_itr, ++c_itr) {
         c_itr->sq_distance = std::numeric_limits<float>::max();
-        c_itr->prefiltered = is_search_filter_triggered(edge, p_itr->location.search_filter_);
+        c_itr->prefiltered =
+            is_search_filter_triggered(edge, *costing, tile, p_itr->location.search_filter_);
+#if 0
+        if (c_itr->prefiltered) {
+          std::cout << "\n\nis_search_filter_triggered true!\n\n\n";
+        }
+#endif
         // set to false if even one candidate was not filtered
         all_prefiltered = all_prefiltered && c_itr->prefiltered;
       }
