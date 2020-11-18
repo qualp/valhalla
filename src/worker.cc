@@ -512,13 +512,12 @@ void parse_locations(const rapidjson::Document& doc,
           // search_filter.exclude_closures
           bool exclude_closures =
               rapidjson::get_optional<bool>(*search_filter, "/exclude_closures").get_value_or(true);
+          location->mutable_search_filter()->set_exclude_closures(exclude_closures);
           // set exclude_closures_disabled if any of the locations has the
           // search_filter.exclude_closures set as false
           if (!exclude_closures) {
-            // std::cout << "\n\n\nsearch_filter.exclude_closures DISABLED\n\n\n";
             exclude_closures_disabled = true;
           }
-          location->mutable_search_filter()->set_exclude_closures(exclude_closures);
         }
       } catch (...) { throw valhalla_exception_t{location_parse_error_code}; }
     }
@@ -846,8 +845,6 @@ void from_json(rapidjson::Document& doc, Options& options) {
 
   // Parse all of the costing options in their specified order
   sif::ParseCostingOptions(doc, "/costing_options", options);
-  // TODO: Why do we set costing again here?
-  options.set_costing(costing);
 
   // parse any named costings for re-costing a given path
   auto recostings = rapidjson::get_child_optional(doc, "/recostings");
