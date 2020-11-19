@@ -538,9 +538,9 @@ void parse_locations(const rapidjson::Document& doc,
     }
 
     // If any of the locations had search_filter.exclude_closures set to false,
-    // set the corresponding internal costing attribute, so that loki search
-    // does not drop a start/end candidate when an edge is marked as closed due
-    // to live traffic
+    // we tell the costing to let all closed roads through, so that we can do
+    // a secondary per-location filtering using loki's search_filter
+    // functionality
     if (exclude_closures_disabled) {
       for (auto& costing : *options.mutable_costing_options()) {
         costing.set_filter_closures(false);
