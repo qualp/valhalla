@@ -950,13 +950,13 @@ std::vector<std::vector<PathInfo>> BidirectionalAStar::FormPath(GraphReader& gra
 
   // we need to figure out the maximum number of paths we could form here and
   // if its more than 1 we need to sort them so we do the best first
-  size_t desired_paths = 1;
-  bool allow_alternates = options.has_alternates() && options.alternates() > 0;
+  size_t desired_paths = 2;
+  bool allow_alternates = true;
 
   LOG_DEBUG("Found connections before stretch filter: " + std::to_string(best_connections_.size()));
 
   if (allow_alternates) {
-    desired_paths += options.alternates();
+    //desired_paths += options.alternates();
     // Cull alternate paths longer than maximum stretch
     // TODO: we should skip adding the connection at all if it's greater than stretch
     filter_alternates_by_stretch(best_connections_);
